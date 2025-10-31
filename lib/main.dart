@@ -105,13 +105,18 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: GameWidget(
-          game: game,
-          overlayBuilderMap: {
-            'gameOver': (context, game) => GameOverOverlayWidget(game: game as BlackCatDeliveryGame),
-            'leaderboard': (context, game) => LeaderboardOverlayWidget(game: game as BlackCatDeliveryGame),
-            'nicknameInput': (context, game) => NicknameInputOverlayWidget(game: game as BlackCatDeliveryGame),
-          },
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: 16 / 9, // 🎮 고정 비율 16:9
+            child: GameWidget(
+              game: game,
+              overlayBuilderMap: {
+                'gameOver': (context, game) => GameOverOverlayWidget(game: game as BlackCatDeliveryGame),
+                'leaderboard': (context, game) => LeaderboardOverlayWidget(game: game as BlackCatDeliveryGame),
+                'nicknameInput': (context, game) => NicknameInputOverlayWidget(game: game as BlackCatDeliveryGame),
+              },
+            ),
+          ),
         ),
       ),
     );
