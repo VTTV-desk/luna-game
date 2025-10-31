@@ -287,6 +287,10 @@ class BlackCatDeliveryGame extends FlameGame
     }
 
     // Add moon
+    // 📱 모바일 대응: 화면 비율에 따라 지면 위치 조정 (먼저 계산!)
+    groundY = size.y > size.x ? size.y * 0.65 : size.y * 0.75; // 세로가 더 긴 경우(모바일) 더 위로
+    playerY = groundY - (size.y * 0.03); // 지면보다 약간 위에 배치
+    
     moon = Moon(position: Vector2(size.x * 0.8, size.y * 0.15));
     add(moon);
     
@@ -302,10 +306,6 @@ class BlackCatDeliveryGame extends FlameGame
     add(StreetLamp(position: Vector2(size.x * 0.15, groundY))); // 왼쪽
     add(StreetLamp(position: Vector2(size.x * 0.85, groundY))); // 오른쪽
 
-    // 📱 모바일 대응: 화면 비율에 따라 지면 위치 조정
-    groundY = size.y > size.x ? size.y * 0.65 : size.y * 0.75; // 세로가 더 긴 경우(모바일) 더 위로
-    playerY = groundY - (size.y * 0.03); // 지면보다 약간 위에 배치
-    
     // Add ground
     add(Ground(position: Vector2(0, groundY)));
 

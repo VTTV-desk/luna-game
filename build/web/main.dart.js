@@ -79669,7 +79669,10 @@ c1.W()
 c2=A.aL(A.d4(null),null,!1,c5)
 b9=new A.MO(b9,c1,B.Y,0,new A.bJ(c2,0,0,b4),null,new A.bf([]),new A.bf([]))
 b9.ev(null,null,null,null,0,new A.L(c3),null,null,c0)
-o.b7(b9)}b6=b7.gn(0).a[0]
+o.b7(b9)}b6=b7.gn(0).a[1]>b7.gn(0).a[0]?b7.gn(0).a[1]*0.65:b7.gn(0).a[1]*0.75
+o.bB=b6
+o.bH=b6-b7.gn(0).a[1]*0.03
+b6=b7.gn(0).a[0]
 b9=b7.gn(0).a[1]
 c0=new A.L(new Float32Array(2))
 c0.ac(b6*0.8,b9*0.15)
@@ -79711,9 +79714,6 @@ b9=o.bB
 b6=new A.L(new Float32Array(2))
 b6.ac(c0*0.85,b9)
 o.b7(A.awW(b6))
-b6=b7.gn(0).a[1]>b7.gn(0).a[0]?b7.gn(0).a[1]*0.65:b7.gn(0).a[1]*0.75
-o.bB=b6
-o.bH=b6-b7.gn(0).a[1]*0.03
 b6=o.bB
 b9=new A.L(new Float32Array(2))
 b9.ac(0,b6)
