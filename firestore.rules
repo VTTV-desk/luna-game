@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 모든 컬렉션에 대해 읽기/쓰기 허용 (개발 모드)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

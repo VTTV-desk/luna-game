@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Test - Moonlight Delivery Luna</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .section {
+      background: #2a2a2a;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    button {
+      background: #6B4FA0;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #8B6FC0;
+    }
+    #output {
+      background: #000;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    .info { color: #2196F3; }
+    .warning { color: #FF9800; }
+  </style>
+</head>
+<body>
+  <h1>🔥 Firebase 테스트 - 달빛 배달부 루나</h1>
+  
+  <div class="section">
+    <h2>1. Firebase 초기화</h2>
+    <button onclick="initFirebase()">Firebase 초기화</button>
+    <button onclick="checkFirestore()">Firestore 연결 확인</button>
+  </div>
+  
+  <div class="section">
+    <h2>2. 테스트 데이터 추가</h2>
+    <button onclick="addTestScores()">테스트 점수 10개 추가</button>
+    <button onclick="initializeStats()">통계 초기화</button>
+  </div>
+  
+  <div class="section">
+    <h2>3. 데이터 조회</h2>
+    <button onclick="loadTopScores()">TOP 10 점수 조회</button>
+    <button onclick="loadStats()">통계 조회</button>
+    <button onclick="countAllScores()">전체 점수 개수</button>
+  </div>
+  
+  <div class="section">
+    <h2>4. 데이터 정리</h2>
+    <button onclick="deleteAllScores()" style="background: #f44336;">모든 점수 삭제</button>
+  </div>
+  
+  <div class="section">
+    <h2>📋 출력</h2>
+    <div id="output">준비 완료. 위 버튼을 클릭하여 Firebase를 테스트하세요.</div>
+  </div>
+
+  <script>
+    let db = null;
+    
+    function log(message, type = 'info') {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type;
+      output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+      output.scrollTop = output.scrollHeight;
+      console.log(message);
+    }
+    
+    function clearLog() {
+      document.getElementById('output').innerHTML = '';
+    }
+    
+    async function initFirebase() {
+      try {
+        clearLog();
+        log('🔥 Firebase 초기화 시작...', 'info');
+        
+        const firebaseConfig = {
+          apiKey: "AIzaSyCHSmJ3B7GA-5sjKusRZb3-yvefAqlLSUk",
+          authDomain: "moonlight-delivery-luna.firebaseapp.com",
+          projectId: "moonlight-delivery-luna",
+          storageBucket: "moonlight-delivery-luna.firebasestorage.app",
+          messagingSenderId: "205380684633",
+          appId: "1:205380684633:web:00f86a112a9186b6611a48",
+        };
+        
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        
+        db = firebase.firestore();
+        log('✅ Firebase 초기화 성공!', 'success');
+        log('✅ Firestore 인스턴스 생성 완료', 'success');
+        
+      } catch (error) {
+        log(`❌ Firebase 초기화 실패: ${error.message}`, 'error');
+        log(`상세 에러: ${error.stack}`, 'error');
+      }
+    }
+    
+    async function checkFirestore() {
+      try {
+        if (!db) {
+          log('⚠️ Firebase가 초기화되지 않았습니다. 먼저 초기화하세요.', 'warning');
+          return;
+        }
+        
+        log('🔍 Firestore 연결 테스트 중...', 'info');
+        
+        // 테스트 쿼리 실행
+        const testQuery = await db.collection('scores').limit(1).get();
+        log(`✅ Firestore 연결 성공! (${testQuery.size}개 문서 발견)`, 'success');
+        
+      } catch (error) {
+        log(`❌ Firestore 연결 실패: ${error.message}`, 'error');
+        log('💡 보안 규칙을 확인하세요!', 'warning');
+      }
+    }
+    
+    async function addTestScores() {
+      try {
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('📝 테스트 점수 추가 중...', 'info');
+        
+        const testPlayers = [
+          { name: '루나', score: 1500, candies: 150 },
+          { name: '노을', score: 1200, candies: 120 },
+          { name: '별이', score: 1000, candies: 100 },
+          { name: '구름', score: 900, candies: 90 },
+          { name: '달빛', score: 800, candies: 80 },
+          { name: '하늘', score: 700, candies: 70 },
+          { name: '바람', score: 600, candies: 60 },
+          { name: '꽃향기', score: 500, candies: 50 },
+          { name: '이슬', score: 400, candies: 40 },
+          { name: '무지개', score: 300, candies: 30 },
+        ];
+        
+        const batch = db.batch();
+        const today = new Date().toISOString().split('T')[0];
+        
+        for (let i = 0; i < testPlayers.length; i++) {
+          const player = testPlayers[i];
+          const docRef = db.collection('scores').doc();
+          batch.set(docRef, {
+            player_id: `test_player_${i}`,
+            player_name: player.name,
+            score: player.score,
+            candies: player.candies,
+            monsters_killed: Math.floor(player.score / 20),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            date: today,
+          });
+        }
+        
+        await batch.commit();
+        log(`✅ ${testPlayers.length}개의 테스트 점수를 추가했습니다!`, 'success');
+        
+      } catch (error) {
+        log(`❌ 테스트 데이터 추가 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    async function initializeStats() {
+      try {
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('📊 통계 초기화 중...', 'info');
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 오늘 통계
+        await db.collection('stats').doc(`daily_${today}`).set({
+          date: today,
+          players: 10,
+        }, { merge: true });
+        
+        // 전체 통계
+        await db.collection('stats').doc('total').set({
+          total_players: 10,
+          last_updated: firebase.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        
+        log('✅ 통계 초기화 완료!', 'success');
+        
+      } catch (error) {
+        log(`❌ 통계 초기화 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    async function loadTopScores() {
+      try {
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('🏆 TOP 10 점수 조회 중...', 'info');
+        
+        const querySnapshot = await db.collection('scores')
+          .orderBy('score', 'desc')
+          .limit(10)
+          .get();
+        
+        log(`📋 총 ${querySnapshot.size}개의 점수를 찾았습니다:`, 'success');
+        
+        querySnapshot.forEach((doc, index) => {
+          const data = doc.data();
+          log(`${index + 1}. ${data.player_name}: ${data.score}점 (사탕: ${data.candies})`, 'info');
+        });
+        
+      } catch (error) {
+        log(`❌ 점수 조회 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    async function loadStats() {
+      try {
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('📊 통계 조회 중...', 'info');
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 전체 통계
+        const totalDoc = await db.collection('stats').doc('total').get();
+        if (totalDoc.exists) {
+          const data = totalDoc.data();
+          log(`📈 전체 플레이어 수: ${data.total_players}`, 'success');
+        } else {
+          log('⚠️ 전체 통계 데이터 없음', 'warning');
+        }
+        
+        // 오늘 통계
+        const dailyDoc = await db.collection('stats').doc(`daily_${today}`).get();
+        if (dailyDoc.exists) {
+          const data = dailyDoc.data();
+          log(`📅 오늘 플레이어 수: ${data.players}`, 'success');
+        } else {
+          log('⚠️ 오늘 통계 데이터 없음', 'warning');
+        }
+        
+      } catch (error) {
+        log(`❌ 통계 조회 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    async function countAllScores() {
+      try {
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('🔢 전체 점수 개수 확인 중...', 'info');
+        
+        const querySnapshot = await db.collection('scores').get();
+        log(`📊 전체 점수 개수: ${querySnapshot.size}개`, 'success');
+        
+      } catch (error) {
+        log(`❌ 개수 확인 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    async function deleteAllScores() {
+      try {
+        if (!confirm('정말로 모든 점수 데이터를 삭제하시겠습니까?')) {
+          return;
+        }
+        
+        if (!db) {
+          await initFirebase();
+        }
+        
+        log('🗑️ 모든 점수 삭제 중...', 'warning');
+        
+        const querySnapshot = await db.collection('scores').get();
+        const batch = db.batch();
+        
+        querySnapshot.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        
+        await batch.commit();
+        log(`✅ ${querySnapshot.size}개의 점수를 삭제했습니다.`, 'success');
+        
+      } catch (error) {
+        log(`❌ 삭제 실패: ${error.message}`, 'error');
+      }
+    }
+    
+    // 페이지 로드 시 자동 초기화
+    window.onload = function() {
+      log('👋 Firebase 테스트 도구에 오신 것을 환영합니다!', 'success');
+      log('먼저 "Firebase 초기화" 버튼을 클릭하세요.', 'info');
+    };
+  </script>
+</body>
+</html>
