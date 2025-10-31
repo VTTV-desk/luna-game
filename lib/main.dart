@@ -105,18 +105,13 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: AspectRatio(
-            aspectRatio: 16 / 9, // 🎮 고정 비율 16:9
-            child: GameWidget(
-              game: game,
-              overlayBuilderMap: {
-                'gameOver': (context, game) => GameOverOverlayWidget(game: game as BlackCatDeliveryGame),
-                'leaderboard': (context, game) => LeaderboardOverlayWidget(game: game as BlackCatDeliveryGame),
-                'nicknameInput': (context, game) => NicknameInputOverlayWidget(game: game as BlackCatDeliveryGame),
-              },
-            ),
-          ),
+        child: GameWidget(
+          game: game,
+          overlayBuilderMap: {
+            'gameOver': (context, game) => GameOverOverlayWidget(game: game as BlackCatDeliveryGame),
+            'leaderboard': (context, game) => LeaderboardOverlayWidget(game: game as BlackCatDeliveryGame),
+            'nicknameInput': (context, game) => NicknameInputOverlayWidget(game: game as BlackCatDeliveryGame),
+          },
         ),
       ),
     );
@@ -129,6 +124,10 @@ class BlackCatDeliveryGame extends FlameGame
   late PlayerCat player;
   late GameUI gameUI;
   late Moon moon; // 🌕 달 참조
+  
+  // 📱 모바일 대응: 동적 지면 높이
+  double groundY = 0.0;
+  double playerY = 0.0;
   
   int score = 0;
   int candies = 0;
@@ -294,20 +293,24 @@ class BlackCatDeliveryGame extends FlameGame
     // 🏰 Add Halloween background buildings (촘촘하게 배치)
     for (int i = 0; i < 10; i++) {
       add(HalloweenBuilding(
-        position: Vector2(i * 200.0, size.y * 0.75), // 200픽셀 간격으로 촘촘하게
+        position: Vector2(i * 200.0, groundY), // 200픽셀 간격으로 촘촘하게
         buildingType: i % 4, // 4가지 건물 타입 순환
       ));
     }
     
     // 🕯️ Add street lamps (좌우 양쪽에 고정)
-    add(StreetLamp(position: Vector2(size.x * 0.15, size.y * 0.75))); // 왼쪽
-    add(StreetLamp(position: Vector2(size.x * 0.85, size.y * 0.75))); // 오른쪽
+    add(StreetLamp(position: Vector2(size.x * 0.15, groundY))); // 왼쪽
+    add(StreetLamp(position: Vector2(size.x * 0.85, groundY))); // 오른쪽
 
+    // 📱 모바일 대응: 화면 비율에 따라 지면 위치 조정
+    groundY = size.y > size.x ? size.y * 0.65 : size.y * 0.75; // 세로가 더 긴 경우(모바일) 더 위로
+    playerY = groundY - (size.y * 0.03); // 지면보다 약간 위에 배치
+    
     // Add ground
-    add(Ground(position: Vector2(0, size.y * 0.75)));
+    add(Ground(position: Vector2(0, groundY)));
 
     // Add player (지면 레벨에 배치 - 장애물과 같은 높이)
-    player = PlayerCat(position: Vector2(size.x * 0.2, size.y * 0.72));
+    player = PlayerCat(position: Vector2(size.x * 0.2, playerY));
     add(player);
 
     // Add UI
@@ -597,20 +600,20 @@ class BlackCatDeliveryGame extends FlameGame
     if (passedCandies < 5) {
       // 0~5개: 유령만
       add(Obstacle(
-        position: Vector2(size.x + 50, size.y * 0.72),
+        position: Vector2(size.x + 50, playerY),
         type: 'ghost',
         speed: gameSpeed,
-        groundY: size.y * 0.72,
+        groundY: playerY,
       ));
     } else if (passedCandies < 15) {
       // 5~15개: 유령 + 보통 마녀
       if (random.nextDouble() < 0.6) {
         // 60% 유령
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'ghost',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else {
         // 40% 보통 마녀
@@ -619,7 +622,7 @@ class BlackCatDeliveryGame extends FlameGame
           position: Vector2(size.x + 50, size.y * skyHeight),
           type: 'witch',
           speed: gameSpeed, // 보통 속도
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       }
     } else if (passedCandies < 30) {
@@ -627,10 +630,10 @@ class BlackCatDeliveryGame extends FlameGame
       if (random.nextDouble() < 0.5) {
         // 50% 유령
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'ghost',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else {
         // 50% 다양한 속도 마녀
@@ -650,7 +653,7 @@ class BlackCatDeliveryGame extends FlameGame
           position: Vector2(size.x + 50, size.y * skyHeight),
           type: 'witch',
           speed: witchSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       }
     } else if (passedCandies < 60) {
@@ -660,10 +663,10 @@ class BlackCatDeliveryGame extends FlameGame
       if (obstacleType < 0.4) {
         // 40% 유령
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'ghost',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else if (obstacleType < 0.7) {
         // 30% 다양한 속도 마녀
@@ -683,15 +686,15 @@ class BlackCatDeliveryGame extends FlameGame
           position: Vector2(size.x + 50, size.y * skyHeight),
           type: 'witch',
           speed: witchSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else {
         // 30% 불꽃 해골
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'fire',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       }
     } else {
@@ -701,10 +704,10 @@ class BlackCatDeliveryGame extends FlameGame
       if (obstacleType < 0.3) {
         // 30% 유령
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'ghost',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else if (obstacleType < 0.6) {
         // 30% 다양한 속도 마녀 (파동 포함)
@@ -730,15 +733,15 @@ class BlackCatDeliveryGame extends FlameGame
           speed: witchSpeed,
           wavingMotion: wavingMotion,
           initialY: size.y * skyHeight,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       } else {
         // 40% 불꽃 해골
         add(Obstacle(
-          position: Vector2(size.x + 50, size.y * 0.72),
+          position: Vector2(size.x + 50, playerY),
           type: 'fire',
           speed: gameSpeed,
-          groundY: size.y * 0.72,
+          groundY: playerY,
         ));
       }
     }
@@ -747,7 +750,7 @@ class BlackCatDeliveryGame extends FlameGame
   void spawnBoss() {
     isBossActive = true;
     add(ScarecrowBoss(
-      position: Vector2(size.x + 150, size.y * 0.72),
+      position: Vector2(size.x + 150, playerY),
       gameSpeed: gameSpeed,
     ));
     if (kDebugMode) debugPrint('🎃 Scarecrow Boss spawned!');
@@ -1856,7 +1859,7 @@ class BlackCatDeliveryGame extends FlameGame
     
     print('🔄 Resetting player (enemies cleared)...');
     // 플레이어 위치 및 상태 리셋
-    final playerStartY = size.y * 0.72;
+    final playerStartY = playerY;
     player.position.x = size.x * 0.2; // 화면 왼쪽 20% 위치
     player.position.y = playerStartY;
     player.velocityY = 0;
