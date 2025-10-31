@@ -403,6 +403,11 @@ class BlackCatDeliveryGame extends FlameGame
       final player = pool[currentIndex % pool.length];
       _poolIndices[audioPath] = (currentIndex + 1) % pool.length;
       
+      // 📱 모바일 브라우저: 첫 재생 시 오디오 컨텍스트 활성화
+      if (!musicStarted) {
+        player.resume().catchError((e) => null); // 오디오 컨텍스트 시작 시도
+      }
+      
       // 🚀 비동기 없이 즉시 재생 (모바일 성능 최적화)
       // stop()과 play()를 동기적으로 처리하여 대기 시간 제거
       player.stop().then((_) {
@@ -424,6 +429,8 @@ class BlackCatDeliveryGame extends FlameGame
     if (musicStarted) return;
     
     try {
+      // 📱 모바일 브라우저 오디오 컨텍스트 활성화
+      await bgMusicPlayer.resume(); // 오디오 컨텍스트 시작
       await bgMusicPlayer.play(AssetSource('audio/halloween_upbeat_bg.mp3'));
       musicStarted = true;
       currentMusicMode = 'normal';
@@ -439,6 +446,9 @@ class BlackCatDeliveryGame extends FlameGame
       // 기존 음악 중지
       await bgMusicPlayer.pause();
       await bossMusicPlayer.pause();
+      
+      // 📱 모바일 브라우저 오디오 컨텍스트 활성화
+      await invincibilityMusicPlayer.resume(); // 오디오 컨텍스트 시작
       
       // 무적 모드 음악 재생
       await invincibilityMusicPlayer.play(AssetSource('audio/invincibility_music.mp3'));
@@ -456,6 +466,9 @@ class BlackCatDeliveryGame extends FlameGame
       // 기존 음악 중지
       await bgMusicPlayer.pause();
       await invincibilityMusicPlayer.pause();
+      
+      // 📱 모바일 브라우저 오디오 컨텍스트 활성화
+      await bossMusicPlayer.resume(); // 오디오 컨텍스트 시작
       
       // 보스 음악 재생
       await bossMusicPlayer.play(AssetSource('audio/boss_battle_music.mp3'));
